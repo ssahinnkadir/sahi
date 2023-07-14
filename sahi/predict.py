@@ -137,6 +137,8 @@ def get_sliced_prediction(
     verbose: int = 1,
     merge_buffer_length: int = None,
     auto_slice_resolution: bool = True,
+    exclude_class_list = None,
+    exclude_class_pred_type = "sliced",
 ) -> PredictionResult:
     """
     Function for slice image + get predicion for each slice + combine predictions in full image.
@@ -247,6 +249,10 @@ def get_sliced_prediction(
                 slice_image_result.original_image_width,
             ],
         )
+
+        if exclude_class_list and (exclude_class_pred_type == "sliced"):
+            prediction_result.exclude_classes_detections(exclude_class_list)
+
         # convert sliced predictions to full predictions
         for object_prediction in prediction_result.object_prediction_list:
             if object_prediction:  # if not empty
@@ -265,6 +271,8 @@ def get_sliced_prediction(
             full_shape=None,
             postprocess=None,
         )
+        if exclude_class_list and (exclude_class_pred_type == "standard"):
+            prediction_result.exclude_classes_detections(exclude_class_list)
         object_prediction_list.extend(prediction_result.object_prediction_list)
 
     # merge matching predictions
@@ -366,6 +374,8 @@ def predict(
     verbose: int = 1,
     return_dict: bool = False,
     force_postprocess_type: bool = False,
+    exclude_class_list = None,
+    exclude_class_pred_type = "sliced",
     **kwargs,
 ):
     """
@@ -558,6 +568,8 @@ def predict(
                 postprocess_match_threshold=postprocess_match_threshold,
                 postprocess_class_agnostic=postprocess_class_agnostic,
                 verbose=1 if verbose else 0,
+                exclude_class_list=exclude_class_list,
+                exclude_class_pred_type=exclude_class_pred_type,
             )
             object_prediction_list = prediction_result.object_prediction_list
             durations_in_seconds["slice"] += prediction_result.durations_in_seconds["slice"]
@@ -571,6 +583,8 @@ def predict(
                 postprocess=None,
                 verbose=0,
             )
+            if exclude_class_list and (exclude_class_pred_type == "standard"):
+                prediction_result.exclude_classes_detections(exclude_class_list)
             object_prediction_list = prediction_result.object_prediction_list
 
         durations_in_seconds["prediction"] += prediction_result.durations_in_seconds["prediction"]

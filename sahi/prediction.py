@@ -230,3 +230,9 @@ class PredictionResult:
                 object_prediction.to_fiftyone_detection(image_height=self.image_height, image_width=self.image_width)
             )
         return fiftyone_detection_list
+    def exclude_classes_detections(self, class_name_list):
+        filtered_prediction_list = []
+        for object_prediction in self.object_prediction_list:
+            if not object_prediction.category.name in class_name_list:
+                filtered_prediction_list.append(object_prediction)
+        self.object_prediction_list = filtered_prediction_list
